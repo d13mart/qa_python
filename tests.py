@@ -1,12 +1,5 @@
 import pytest
 
-from main import BooksCollector
-
-
-@pytest.fixture
-def collector():
-    return BooksCollector()
-
 
 def test_add_new_book_add_one_book(collector):
     collector.add_new_book('Город которого нет')
@@ -73,21 +66,30 @@ def test_get_books_genre(collector):
 
 
 @pytest.mark.parametrize(
-    'book_name, genre, expected_in_children',
+    'book_name, genre',
     [
-        ('Винни-Пух', 'Мультфильмы', True),
-        ('Сияние', 'Ужасы', False),
-        ('Шерлок Холмс', 'Детективы', False),
+        ('Винни-Пух', 'Мультфильмы'),
+        ('Дюна', 'Фантастика'),
+        ('Один дома', 'Комедии'),
     ],
 )
-def test_get_books_for_children(collector, book_name, genre, expected_in_children):
+def test_get_books_for_children_includes_book_without_age_rating(collector, book_name, genre):
     collector.add_new_book(book_name)
     collector.set_book_genre(book_name, genre)
-    children_books = collector.get_books_for_children()
-    if expected_in_children:
-        assert book_name in children_books
-    else:
-        assert book_name not in children_books
+    assert book_name in collector.get_books_for_children()
+
+
+@pytest.mark.parametrize(
+    'book_name, genre',
+    [
+        ('Сияние', 'Ужасы'),
+        ('Шерлок Холмс', 'Детективы'),
+    ],
+)
+def test_get_books_for_children_excludes_book_with_age_rating(collector, book_name, genre):
+    collector.add_new_book(book_name)
+    collector.set_book_genre(book_name, genre)
+    assert book_name not in collector.get_books_for_children()
 
 
 def test_add_book_in_favorites(collector):
